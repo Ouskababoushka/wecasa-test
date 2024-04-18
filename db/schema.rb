@@ -10,9 +10,40 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_04_18_121159) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_18_130046) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "appointments", force: :cascade do |t|
+    t.datetime "starts_at"
+    t.datetime "ends_at"
+    t.bigint "professional_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["professional_id"], name: "index_appointments_on_professional_id"
+  end
+
+  create_table "bookings", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "prestation_id", null: false
+    t.string "address_of_prestation"
+    t.float "lat"
+    t.float "lng"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["prestation_id"], name: "index_bookings_on_prestation_id"
+    t.index ["user_id"], name: "index_bookings_on_user_id"
+  end
+
+  create_table "opening_hours", force: :cascade do |t|
+    t.bigint "professional_id", null: false
+    t.integer "day"
+    t.time "open_at"
+    t.time "close_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["professional_id"], name: "index_opening_hours_on_professional_id"
+  end
 
   create_table "prestations", force: :cascade do |t|
     t.string "reference"
@@ -43,4 +74,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_18_121159) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "appointments", "professionals"
+  add_foreign_key "bookings", "prestations"
+  add_foreign_key "bookings", "users"
+  add_foreign_key "opening_hours", "professionals"
 end
