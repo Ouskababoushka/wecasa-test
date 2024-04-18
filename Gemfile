@@ -40,6 +40,8 @@ gem 'importmap-rails'
 
 gem 'simple_form'
 
+gem 'pg'
+
 # Use Sass to process CSS
 # gem "sassc-rails"
 
