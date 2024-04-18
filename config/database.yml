@@ -1,7 +1,8 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  username: mac
+  # username: <%= ENV['DATABASE_USERNAME'] || 'default_username' %>
+  # password: <%= ENV['DATABASE_PASSWORD'] || 'default_password' %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 development:
@@ -15,5 +16,5 @@ test:
 production:
   <<: *default
   database: wecasatest_production
-  username: mac
-  password: <%= ENV['WECASATEST_DATABASE_PASSWORD'] %>
+  username: <%= ENV['DATABASE_USERNAME'] %>
+  password: <%= ENV['DATABASE_PASSWORD'] %>
