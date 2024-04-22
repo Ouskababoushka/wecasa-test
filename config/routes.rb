@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
-  devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Defines the root path route ("/")
-  # root "articles#index"
+  get 'home/index'
+  root 'home#index'
+  resources :bookings, only: [:create]
+  get '/confirmation', to: 'bookings#confirmation'
+  post '/find_pro_for_existing_booking', to: 'bookings#find_pro_for_existing_booking', as: 'find_pro_bookings'
 end
