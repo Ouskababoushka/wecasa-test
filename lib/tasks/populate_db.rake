@@ -97,11 +97,6 @@ task populate_db: :environment do
     end
   end
 
-  # def find_or_create_appointment(booking_data, prestation)
-  #   Appointment.find_or_create_by!(starts_at: booking_data["starts_at"]) do |ap|
-  #     ap.ends_at = booking_data["starts_at"].to_date + prestation.duration.minutes
-  # end
-
   # ----------------
 
   file_path = Rails.root.join('lib/tasks/data/data.json')
