@@ -44,6 +44,11 @@ gem 'pg'
 
 gem 'devise'
 
+gem 'sassc-rails'
+gem 'bootstrap', '~> 5.1.3'
+gem 'bootstrap-datepicker-rails'
+gem 'flatpickr'
+gem 'geocoder'
 
 # Use Sass to process CSS
 # gem "sassc-rails"
@@ -65,10 +70,14 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+  gem 'brakeman'
+  gem 'rubocop'
+
 end
 
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
+  gem "rspec"
   gem "capybara"
   gem "selenium-webdriver"
   gem "webdrivers"
