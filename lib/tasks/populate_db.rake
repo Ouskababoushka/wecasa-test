@@ -1,6 +1,10 @@
 desc "populate wecasatest_development from data.json"
 task populate_db: :environment do
 
+  # I created differents methods to create each type of resources. Professional is the central table here.
+  # So i decided to create each resources belonging to professionals in #create_professionals.
+  # I then create bookings and associate user and prestations to it.
+
   def create_professionals(professionals_data)
     professionals_data.each do |pro_data|
       next unless pro_data["name"] && pro_data["address"]
@@ -17,7 +21,6 @@ task populate_db: :environment do
       create_opening_hours(professional, pro_data["opening_hours"]) if pro_data["opening_hours"]
       create_appoitments(professional, pro_data["appointments"]) if pro_data["appointments"]
       associate_prestations(professional, pro_data["prestations"]) if pro_data["prestations"]
-
     end
   end
 
@@ -57,23 +60,31 @@ task populate_db: :environment do
     end
   end
 
+  def create_user(booking_data)
+    user = User.create!(
+      name: booking_data["name"],
+      email: booking_data["email"],
+      password: "azerty",
+      password_confirmation: "azerty"
+    )
+  end
+
   def create_bookings(bookings_data)
     bookings_data.each do |booking_data|
-      next unless booking_data["name"] && booking_data["address"]
+      next unless booking_data["email"] && booking_data["starts_at"]
 
-      booking = Booking.find_or_create_by(email: booking_data["email"], starts_at: booking_data["starts_at"]) do |book|
-        book.lattitude = booking_data["lat"]
-        book.longitude = booking_data["lng"]
-        book.max_kil = booking_data["max_kilometers"]
+      user = create_user(booking_data)
+      puts "Created User #{user.name}" if user
 
-        puts "Created/Found professional: #{pro.name}"
+      booking = Booking.find_or_create_by(starts_at: booking_data["starts_at"], address_of_prestation: booking_data["address"]) do |bk|
+        bk.lat = booking_data["lat"]
+        bk.lng = booking_data["lng"]
+
+        bk.prestation = Prestation.find_by(reference: booking_data["prestations"])
+        bk.user = user
+
+        puts "Created/Found booking: #{bk.email} + #{bk.starts_at}"
       end
-
-      # Create opening hours, appoitments and prestations and associate to each professionnal
-      create_opening_hours(professional, booking_data["opening_hours"]) if booking_data["opening_hours"]
-      create_appoitments(professional, booking_data["appointments"]) if booking_data["appointments"]
-      associate_prestations(professional, booking_data["prestations"]) if booking_data["prestations"]
-
     end
   end
 
@@ -85,7 +96,7 @@ task populate_db: :environment do
   begin
     data = JSON.parse(File.read(file_path))
     create_professionals(data["pros"]) if data["pros"]
-    # create_bookings(data["bookings"]) if data["bookings"]
+    create_bookings(data["bookings"]) if data["bookings"]
   rescue Errno::ENOENT
     puts "File not found: #{file_path}"
     exit
