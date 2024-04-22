@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_04_22_115427) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_22_131129) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,9 +31,10 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_22_115427) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "prestation_id", null: false
-    t.bigint "appointment_id", null: false
-    t.index ["appointment_id"], name: "index_bookings_on_appointment_id"
+    t.bigint "professional_id"
+    t.datetime "starts_at"
     t.index ["prestation_id"], name: "index_bookings_on_prestation_id"
+    t.index ["professional_id"], name: "index_bookings_on_professional_id"
     t.index ["user_id"], name: "index_bookings_on_user_id"
   end
 
@@ -87,8 +88,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_22_115427) do
   end
 
   add_foreign_key "appointments", "professionals"
-  add_foreign_key "bookings", "appointments"
   add_foreign_key "bookings", "prestations"
+  add_foreign_key "bookings", "professionals"
   add_foreign_key "bookings", "users"
   add_foreign_key "opening_hours", "professionals"
   add_foreign_key "services", "prestations"
