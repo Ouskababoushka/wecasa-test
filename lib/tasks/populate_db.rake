@@ -47,7 +47,7 @@ task populate_db: :environment do
 
   def create_appoitments(professional, appointments_data)
     appointments_data.each do |ap_data|
-      next unless ap_data["day"]
+      next unless ap_data["starts_at"]
 
       Appointment.find_or_create_by(professional_id: professional.id, starts_at: ap_data["starts_at"]) do |appointment|
         appointment.ends_at = ap_data["ends_at"]
@@ -59,26 +59,11 @@ task populate_db: :environment do
 
   def associate_prestations(professional, prestations_data)
     prestations_data.each do |presta_data|
-      prestation = Prestation.find_or_create_by(reference: presta_data) do |p|
-        p.duration = presta_data["duration"]
-      end
+      prestation = Prestation.find_or_create_by(reference: presta_data)
       professional.prestations << prestation unless professional.prestations.include?(prestation)
 
-      puts "Set prestation for #{prestation.reference}"
+      puts "Set prestation for #{professional.name}"
     end
-  end
-
-  def create_user(booking_data)
-    User.find_or_create_by(name: booking_data["name"], email: booking_data["email"]) do |user|
-      user.password = "azerty"
-      user.password_confirmation = "azerty"
-    end
-  end
-
-  def find_or_create_appointment(booking_data, prestation)
-    Appointment.find_or_create_by(
-      starts_at: booking_data["starts_at"],
-      ends_at: booking_data["starts_at"].to_date + prestation.duration.minutes)
   end
 
   def create_bookings(bookings_data)
@@ -89,10 +74,9 @@ task populate_db: :environment do
       puts "Created User #{user.name}" if user.present?
 
       prestation = Prestation.find_by(reference: booking_data["prestations"])
-      appointment = find_or_create_appointment(booking_data, prestation) # Here i create appointment if i don't find one corresponding in the json file.
 
-      if user && prestation && appointment
-        booking = Booking.find_or_create_by(user: user, appointment: appointment) do |bk|
+      if user && prestation
+        booking = Booking.find_or_create_by!(user: user, starts_at: booking_data["starts_at"]) do |bk|
           bk.lat = booking_data["lat"]
           bk.lng = booking_data["lng"]
           bk.address_of_prestation = booking_data["address"]
@@ -101,10 +85,22 @@ task populate_db: :environment do
           puts "Created/Found booking: #{bk.user.email} at #{bk.starts_at}"
         end
       else
-        puts "Failed to create booking due to missing user, prestation, or appointment."
+        puts "Failed to create booking due to missing user, prestation."
       end
     end
   end
+
+  def create_user(booking_data)
+    User.find_or_create_by(name: booking_data["name"], email: booking_data["email"]) do |user|
+      user.password = "azerty"
+      user.password_confirmation = "azerty"
+    end
+  end
+
+  # def find_or_create_appointment(booking_data, prestation)
+  #   Appointment.find_or_create_by!(starts_at: booking_data["starts_at"]) do |ap|
+  #     ap.ends_at = booking_data["starts_at"].to_date + prestation.duration.minutes
+  # end
 
   # ----------------
 
@@ -113,6 +109,7 @@ task populate_db: :environment do
 
   begin
     data = JSON.parse(File.read(file_path))
+    create_prestations(data["prestations"]) if data["prestations"]
     create_professionals(data["pros"]) if data["pros"]
     create_bookings(data["bookings"]) if data["bookings"]
   rescue Errno::ENOENT
