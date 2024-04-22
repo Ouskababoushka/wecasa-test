@@ -3,7 +3,7 @@ task populate_db: :environment do
 
   # I created differents methods to create each type of resources. Professional is the central table here.
   # So i decided to create each resources belonging to professionals in #create_professionals.
-  # I then create bookings and associate user and prestations to it.
+  # I then create bookings and associate user, prestations and appointments to it.
 
   def create_professionals(professionals_data)
     professionals_data.each do |pro_data|
@@ -61,12 +61,16 @@ task populate_db: :environment do
   end
 
   def create_user(booking_data)
-    user = User.create!(
-      name: booking_data["name"],
-      email: booking_data["email"],
-      password: "azerty",
-      password_confirmation: "azerty"
-    )
+    User.find_or_create_by(name: booking_data["name"], email: booking_data["email"]) do |user|
+      user.password = "azerty"
+      user.password_confirmation = "azerty"
+    end
+  end
+
+  def find_or_create_appointment(booking_data, prestation)
+    Appointment.find_or_create_by(
+      starts_at: booking_data["starts_at"],
+      ends_at: booking_data["starts_at"].to_date + prestation.duration.minutes)
   end
 
   def create_bookings(bookings_data)
