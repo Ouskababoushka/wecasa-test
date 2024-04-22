@@ -1,6 +1,5 @@
 desc "populate wecasatest_development from data.json"
 task populate_db: :environment do
-
   # I created differents methods to create each type of resources. Professional is the central table here.
   # So i decided to create each resources belonging to professionals in #create_professionals.
   # I then create bookings and associate user, prestations and appointments to it.
@@ -114,5 +113,4 @@ task populate_db: :environment do
     puts "Invalid JSON in file."
     exit
   end
-
 end
