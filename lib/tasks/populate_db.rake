@@ -5,6 +5,14 @@ task populate_db: :environment do
   # So i decided to create each resources belonging to professionals in #create_professionals.
   # I then create bookings and associate user, prestations and appointments to it.
 
+  def create_prestations(prestations_data)
+    prestations_data.each do |presta_data|
+      prestation = Prestation.create(reference: presta_data["reference"], duration: presta_data["duration"])
+
+      puts "Created prestation for #{prestation.reference} on #{prestation.duration}"
+    end
+  end
+
   def create_professionals(professionals_data)
     professionals_data.each do |pro_data|
       next unless pro_data["name"] && pro_data["address"]
