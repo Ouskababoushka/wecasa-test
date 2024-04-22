@@ -78,16 +78,22 @@ task populate_db: :environment do
       next unless booking_data["email"] && booking_data["starts_at"]
 
       user = create_user(booking_data)
-      puts "Created User #{user.name}" if user
+      puts "Created User #{user.name}" if user.present?
 
-      booking = Booking.find_or_create_by(starts_at: booking_data["starts_at"], address_of_prestation: booking_data["address"]) do |bk|
-        bk.lat = booking_data["lat"]
-        bk.lng = booking_data["lng"]
+      prestation = Prestation.find_by(reference: booking_data["prestations"])
+      appointment = find_or_create_appointment(booking_data, prestation) # Here i create appointment if i don't find one corresponding in the json file.
 
-        bk.prestation = Prestation.find_by(reference: booking_data["prestations"])
-        bk.user = user
+      if user && prestation && appointment
+        booking = Booking.find_or_create_by(user: user, appointment: appointment) do |bk|
+          bk.lat = booking_data["lat"]
+          bk.lng = booking_data["lng"]
+          bk.address_of_prestation = booking_data["address"]
+          bk.prestation = prestation
 
-        puts "Created/Found booking: #{bk.email} + #{bk.starts_at}"
+          puts "Created/Found booking: #{bk.user.email} at #{bk.starts_at}"
+        end
+      else
+        puts "Failed to create booking due to missing user, prestation, or appointment."
       end
     end
   end
