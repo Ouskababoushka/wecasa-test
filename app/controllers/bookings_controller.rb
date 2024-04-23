@@ -2,38 +2,51 @@ class BookingsController < ApplicationController
   def create
     @booking = Booking.new(booking_params)
     @booking.user = User.first
-    @prestations = Prestation.all
-    @prestation = Prestation.find_by(id: params["booking"]["prestation_id"])
-    @professionals = @prestation.professionals if @prestation
+    @prestation = Prestation.find_by(id: params['booking']['prestation_id'])
 
-    closest_professional = find_closest_professional(@booking.lat, @booking.lng)
-
-    if closest_professional.nil?
-      flash[:alert] = 'No available professionals within range.'
-      render 'home/confirmation' and return
+    if @prestation.nil?
+      flash[:alert] = 'Prestation not found.'
+      redirect_to home_index_path and return
     end
 
-    @booking.professional = closest_professional
+    # Geocode the address
+    if @booking.address_of_prestation.present?
+      coordinates = Geocoder.coordinates(@booking.address_of_prestation)
+      if coordinates
+        @booking.lat, @booking.lng = coordinates
+      else
+        flash[:alert] = 'Geocoding failed, please check the address.'
+        render 'home/index' and return
+      end
+    end
+
+    @nearest_professionals = find_closest_professionals(@booking.lat, @booking.lng) if @booking.lat && @booking.lng
 
     if @booking.save
-      redirect_to confirmation_path, notice: 'Booking was successfully created.'
+      redirect_to confirmation_path(nearest_professionals: @nearest_professionals || [])
     else
-      render 'home/index', alert: 'Booking was NOT created.'
+      flash[:alert] = 'Booking was NOT created.'
+      render 'home/index'
     end
   end
 
   def find_pro_for_existing_booking
     booking_id = params[:booking][:booking_id]
     booking = Booking.find(booking_id)
+    @prestation = booking.prestation
 
-    closest_professional = find_closest_professional(booking.lat, booking.lng)
-    booking.professional = closest_professional
-    booking.save
+    @nearest_professionals = find_closest_professionals(booking.lat, booking.lng)
 
-    redirect_to confirmation_path, notice: 'Professional assigned successfully.'
+    redirect_to confirmation_path(nearest_professionals: @nearest_professionals)
   end
 
   def confirmation
+    if params[:nearest_professionals].blank?
+      @selected_professionals = nil
+      flash[:notice] = 'No nearest professionals found.'
+    else
+      @selected_professionals = Professional.where(id: params[:nearest_professionals])
+    end
   end
 
   private
@@ -42,13 +55,15 @@ class BookingsController < ApplicationController
     params.require(:booking).permit(:prestation_id, :address_of_prestation, :lat, :lng)
   end
 
-  def find_closest_professional(booking_lat, booking_lng)
-    professionals = Professional.all
-    nearest = professionals.min_by do |professional|
+  def find_closest_professionals(booking_lat, booking_lng)
+    return [] unless @prestation
+
+    professionals = @prestation.professionals.select do |professional|
       distance = Geocoder::Calculations.distance_between([professional.latitude, professional.longitude],
                                                          [booking_lat, booking_lng], units: :km)
-      distance if distance <= professional.max_kil
+      distance <= professional.max_kil  # Only select professionals within range
     end
-    nearest
+
+    professionals.map(&:id)
   end
 end
