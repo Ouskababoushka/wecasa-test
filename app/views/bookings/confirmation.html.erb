@@ -1,3 +1,12 @@
 <h1>Booking Confirmation</h1>
-<p>Your booking has been successfully created!</p>
+<p>Your booking has been successfully created // Closest pros are :</p>
 
+<% if @selected_professionals.present? %>
+  <ul>
+    <% @selected_professionals.each do |professional| %>
+      <li><%= professional.name %> - <%= professional.address %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No nearest professionals found.</p>
+<% end %>
