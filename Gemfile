@@ -49,6 +49,8 @@ gem 'bootstrap', '~> 5.1.3'
 gem 'bootstrap-datepicker-rails'
 gem 'flatpickr'
 gem 'geocoder'
+gem 'jquery-rails'
+
 
 # Use Sass to process CSS
 # gem "sassc-rails"
