@@ -1,7 +1,8 @@
 <h1 class="mb-5">Custom Booking</h1>
 <%= simple_form_for :booking, url: bookings_path, method: :post do |f| %>
   <%= f.input :prestation_id, as: :select, collection: @prestations, label_method: :reference, value_method: :id, label: "Select a Prestation", include_blank: "Please select" %>
-  <%= f.input :service_date, label: "Choose a Date", as: :datetime, id:"date"%>
+
+  <%= f.input :starts_at, label: "Choose a Date", class: 'date', as: :datetime %>
   <%= f.input :address_of_prestation, as: :string %>
   <%= f.input :lat, as: :hidden %>
   <%= f.input :lng, as: :hidden %>
@@ -13,3 +14,9 @@
   <%= f.input :booking_id, as: :select, collection: @existing_bookings, label: "Select an existing Booking", include_blank: "Please select" %>
   <%= f.button :submit, "Find pro for existing booking" %>
 <% end %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    flatpickr('.date');
+  });
+</script>
